@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="TourGuide.API/TourGuide.API.csproj" />
+  </Folder>
+  <Folder Name="/Client/">
+    <Project Path="TourGuide.WebAdmin/TourGuide.WebAdmin.csproj" />
+    <Project Path="TourGuide.WebQR/TourGuide.WebQR.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="TourGuide.Domain/TourGuide.Domain.csproj" />
+  </Folder>
+  <Project Path="Mobile/Mobile.csproj" Id="1b1c1dba-3058-4d00-a16a-95fa9035b50e" />
+</Solution>
