@@ -1,0 +1,157 @@
+@page "/merchant/dashboard"
+@layout TourGuide.WebAdmin.Components.Layout.MerchantLayout
+@rendermode InteractiveServer
+@using TourGuide.WebAdmin.Components.Shared
+@using TourGuide.WebAdmin.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PortalGuard RequiredRole="Merchant" RedirectTo="/merchant/login" OnAuthorized="LoadAfterAuthAsync">
+    @if (_loading)
+    {
+        <div class="d-flex justify-center my-12">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </div>
+    }
+    else if (_overview != null)
+    {
+        <div class="d-flex justify-space-between align-center mb-6">
+            <div>
+                <MudText Typo="Typo.h4">Dashboard chủ quán</MudText>
+                <MudText Typo="Typo.body2">Theo dõi POI, lượt quét QR, lượt nghe và alert vận hành.</MudText>
+            </div>
+            <div class="d-flex gap-2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/merchant/register">Tạo POI</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/merchant/pois">Quản lý POI</MudButton>
+            </div>
+        </div>
+
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 glass-panel" Style="border-radius: 14px;">
+                    <MudText Typo="Typo.caption">Tổng POI</MudText>
+                    <MudText Typo="Typo.h4">@_overview.TotalPois</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 glass-panel" Style="border-radius: 14px;">
+                    <MudText Typo="Typo.caption">QR counted</MudText>
+                    <MudText Typo="Typo.h4">@_overview.CountedQrScans</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudPaper Class="pa-4 glass-panel" Style="border-radius: 14px;">
+                    <MudText Typo="Typo.caption">TTS counted</MudText>
+                    <MudText Typo="Typo.h4">@_overview.CountedTtsPlays</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" lg="7">
+                <MudPaper Class="pa-4 glass-panel" Style="border-radius: 14px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">Top POI</MudText>
+                    @if (_overview.TopPois.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true">Chưa có POI nào. Hãy tạo POI đầu tiên từ menu Tạo POI.</MudAlert>
+                    }
+                    else
+                    {
+                        <MudTable Items="_overview.TopPois" Dense="true">
+                            <HeaderContent>
+                                <MudTh>POI</MudTh>
+                                <MudTh>Trạng thái</MudTh>
+                                <MudTh>QR</MudTh>
+                                <MudTh>TTS</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Name</MudTd>
+                                <MudTd>@context.Status</MudTd>
+                                <MudTd>@context.CountedQrScans</MudTd>
+                                <MudTd>@context.CountedTtsPlays</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" lg="5">
+                <MudPaper Class="pa-4 glass-panel" Style="border-radius: 14px;">
+                    <MudText Typo="Typo.h6" Class="mb-3">Alerts</MudText>
+                    @if (_overview.Alerts.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true">Chưa có alert mới.</MudAlert>
+                    }
+                    else
+                    {
+                        @foreach (var alert in _overview.Alerts)
+                        {
+                            <MudAlert Severity="@ToSeverity(alert.Severity)" Dense="true" Class="mb-2">
+                                <strong>@alert.Title</strong><br />@alert.Message
+                            </MudAlert>
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</PortalGuard>
+
+@code {
+    private OwnerOverview? _overview;
+    private bool _loading = true;
+
+    private async Task ReloadAsync()
+    {
+        try
+        {
+            _overview = await Http.GetFromJsonAsync<OwnerOverview>("api/analytics/owner/overview") ?? new OwnerOverview();
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Không tải được dashboard chủ quán. Vui lòng đăng nhập lại hoặc thử lại sau.", Severity.Error);
+            _overview = new OwnerOverview();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadAfterAuthAsync(SessionUser user)
+    {
+        await ReloadAsync();
+        StateHasChanged();
+    }
+
+    private static Severity ToSeverity(string severity) => severity switch
+    {
+        "Warning" => Severity.Warning,
+        "Success" => Severity.Success,
+        "Error" => Severity.Error,
+        _ => Severity.Info,
+    };
+
+    private sealed class OwnerOverview
+    {
+        public int TotalPois { get; set; }
+        public int CountedQrScans { get; set; }
+        public int CountedTtsPlays { get; set; }
+        public List<PoiPerformance> TopPois { get; set; } = new();
+        public List<AlertItem> Alerts { get; set; } = new();
+    }
+
+    private sealed class PoiPerformance
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public int CountedQrScans { get; set; }
+        public int CountedTtsPlays { get; set; }
+    }
+
+    private sealed class AlertItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
+    }
+}

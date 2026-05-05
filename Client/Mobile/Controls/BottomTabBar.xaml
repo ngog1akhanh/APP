@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Mobile.Controls.BottomTabBar">
+    <Grid HeightRequest="100" VerticalOptions="End" InputTransparent="False">
+        <!-- Floating Pill Background -->
+        <Border StrokeThickness="1" 
+                Stroke="{AppThemeBinding Light=#E0E0E0, Dark=#333333}" 
+                BackgroundColor="{AppThemeBinding Light=#F2FFFFFF, Dark=#E61A1A1A}" 
+                StrokeShape="RoundRectangle 35"
+                Margin="20,0,20,20"
+                HeightRequest="70"
+                VerticalOptions="End">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,8" Radius="20" Opacity="0.15" />
+            </Border.Shadow>
+
+            <Grid Padding="5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Home -->
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnHomeClicked" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Image Source="{AppThemeBinding Light=ic_home.png, Dark=ic_home_dark.png}" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                    <Label Text="Khám phá" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextColorLight}, Dark={StaticResource SecondaryTextColorDark}}" FontAttributes="Bold" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Map -->
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapClicked" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Image Source="{AppThemeBinding Light=ic_explore.png, Dark=ic_explore_dark.png}" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                    <Label Text="Bản đồ" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextColorLight}, Dark={StaticResource SecondaryTextColorDark}}" FontAttributes="Bold" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- QR Center -->
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center" Spacing="2">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnQrClicked" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Border HeightRequest="44" WidthRequest="44" StrokeThickness="0" StrokeShape="RoundRectangle 22" BackgroundColor="{StaticResource Primary}" HorizontalOptions="Center">
+                        <Border.Shadow>
+                            <Shadow Brush="{StaticResource Primary}" Offset="0,4" Radius="8" Opacity="0.4" />
+                        </Border.Shadow>
+                        <Image Source="ic_scan.png" HeightRequest="20" WidthRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Text="Quét mã" FontSize="11" TextColor="{StaticResource Primary}" FontAttributes="Bold" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+
+                <!-- Profile -->
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnProfileClicked" />
+                    </VerticalStackLayout.GestureRecognizers>
+                    <Image Source="{AppThemeBinding Light=ic_profile.png, Dark=ic_profile_dark.png}" HeightRequest="22" WidthRequest="22" HorizontalOptions="Center" />
+                    <Label Text="Cá nhân" FontSize="11" TextColor="{AppThemeBinding Light={StaticResource SecondaryTextColorLight}, Dark={StaticResource SecondaryTextColorDark}}" FontAttributes="Bold" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>

@@ -1,0 +1,27 @@
+@page "/"
+@inject NavigationManager Navigation
+
+@if (!string.IsNullOrWhiteSpace(id))
+{
+    <div style="padding: 24px; text-align: center;">
+        <p>Đang mở trang thuyết minh...</p>
+    </div>
+
+    <script>
+        window.location.replace("/poi/@id");
+    </script>
+}
+else
+{
+    <div style="min-height: 100vh; display: grid; place-items: center; background: #fff7ed; color: #7c2d12; padding: 24px;">
+        <div style="max-width: 560px; text-align: center;">
+            <h1 style="font-size: 2rem; margin-bottom: 12px;">TourGuide WebQR</h1>
+            <p style="line-height: 1.6;">Quét mã QR tại điểm đến để mở thuyết minh, bản đồ và nghe audio ngay trên trình duyệt.</p>
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? id { get; set; }
+}

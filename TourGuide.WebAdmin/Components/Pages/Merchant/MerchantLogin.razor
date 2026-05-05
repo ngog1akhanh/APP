@@ -1,0 +1,91 @@
+@page "/merchant/login"
+@page "/merchant"
+@layout TourGuide.WebAdmin.Components.Layout.MerchantLayout
+@rendermode InteractiveServer
+@using Blazored.LocalStorage
+@using TourGuide.WebAdmin.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex align-center justify-center" Style="min-height: 78vh;">
+    <MudPaper Elevation="4" Class="pa-8 glass-panel" Style="width: 100%; max-width: 460px; border-radius: 16px;">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="gradient-text">Cổng chủ quán</MudText>
+        <MudText Typo="Typo.body2" Align="Align.Center" Class="mb-6">Đăng nhập để quản lý nhiều POI, analytics và trạng thái duyệt.</MudText>
+        <MudTextField @bind-Value="_phone" Label="Số điện thoại" Variant="Variant.Outlined" Class="mb-4" />
+        <MudTextField @bind-Value="_password" Label="Mật khẩu" Variant="Variant.Outlined" InputType="InputType.Password" Class="mb-6" />
+        <MudButton FullWidth="true" Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginAsync">Đăng nhập</MudButton>
+        <div class="d-flex justify-center mt-6">
+            <MudLink Href="/merchant/signup">Chưa có tài khoản? Tạo tài khoản merchant</MudLink>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string _phone = string.Empty;
+    private string _password = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return;
+        }
+
+        try
+        {
+            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var me = await Http.GetFromJsonAsync<SessionUser>("api/auth/me");
+            if (string.Equals(me?.Role, "Merchant", StringComparison.OrdinalIgnoreCase))
+            {
+                Navigation.NavigateTo("/merchant/dashboard", true);
+                return;
+            }
+        }
+        catch
+        {
+        }
+
+        await LocalStorage.RemoveItemAsync("authToken");
+        await LocalStorage.RemoveItemAsync("userId");
+        await LocalStorage.RemoveItemAsync("userRole");
+        await LocalStorage.RemoveItemAsync("userName");
+    }
+
+    private async Task LoginAsync()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/merchant/login", new { Phone = _phone, Password = _password });
+            if (!response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Sai tài khoản hoặc mật khẩu.", Severity.Error);
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<AuthResult>();
+            if (result == null)
+            {
+                Snackbar.Add("Không đọc được phản hồi đăng nhập.", Severity.Error);
+                return;
+            }
+
+            await LocalStorage.SetItemAsync("authToken", result.Token);
+            await LocalStorage.SetItemAsync("userId", result.User.Id);
+            await LocalStorage.SetItemAsync("userRole", result.User.Role);
+            await LocalStorage.SetItemAsync("userName", result.User.FullName);
+            Navigation.NavigateTo("/merchant/dashboard", true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}
