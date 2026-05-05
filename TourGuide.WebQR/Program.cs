@@ -1,7 +1,27 @@
+using TourGuide.WebQR.Components;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRazorComponents();
+var backendBaseUrl = builder.Configuration["Backend:BaseUrl"]
+    ?? throw new InvalidOperationException("Missing Backend:BaseUrl configuration.");
+builder.Services.AddScoped(_ => new HttpClient
+{
+    BaseAddress = new Uri(backendBaseUrl),
+});
+
 var app = builder.Build();
 
-app.UseDefaultFiles(); // Tự động tìm file index.html
-app.UseStaticFiles();  // Mở khóa thư mục wwwroot chứa HTML/CSS/JS
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>();
 
 app.Run();
